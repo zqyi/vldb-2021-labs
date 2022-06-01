@@ -148,6 +148,7 @@ func (s *testCommitterSuite) TestPrewriteRollback(c *C) {
 	c.Assert(v, BytesEquals, []byte("a0"))
 
 	err = committer.prewriteKeys(NewBackoffer(ctx, PrewriteMaxBackoff), committer.keys)
+
 	if err != nil {
 		// Retry.
 		txn1 = s.begin(c)
@@ -159,6 +160,7 @@ func (s *testCommitterSuite) TestPrewriteRollback(c *C) {
 		c.Assert(err, IsNil)
 		err = committer.prewriteKeys(NewBackoffer(ctx, PrewriteMaxBackoff), committer.keys)
 		c.Assert(err, IsNil)
+
 	}
 	committer.commitTS, err = s.store.oracle.GetTimestamp(ctx)
 	c.Assert(err, IsNil)

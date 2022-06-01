@@ -37,7 +37,7 @@ const (
 	DefaultLogMaxSize = 300 // MB
 	// DefaultLogFormat is the default format of the log.
 	DefaultLogFormat = "text"
-	defaultLogLevel  = log.InfoLevel
+	defaultLogLevel  = log.DebugLevel
 	// DefaultQueryLogMaxLen is the default max length of the query in the log.
 	DefaultQueryLogMaxLen = 4096
 )

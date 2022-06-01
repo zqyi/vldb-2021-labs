@@ -241,6 +241,7 @@ func (s *testLockSuite) TestCheckTxnStatus(c *C) {
 	status, err := resolver.getTxnStatus(bo, txn.StartTS(), []byte("key"), currentTS, currentTS, true)
 	c.Assert(err, IsNil)
 	c.Assert(status.IsCommitted(), IsFalse)
+
 	c.Assert(status.ttl, Greater, uint64(0))
 	c.Assert(status.CommitTS(), Equals, uint64(0))
 

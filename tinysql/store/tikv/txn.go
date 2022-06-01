@@ -93,6 +93,7 @@ func (txn *tikvTxn) Reset() {
 
 // Get implements transaction interface.
 func (txn *tikvTxn) Get(ctx context.Context, k kv.Key) ([]byte, error) {
+
 	ret, err := txn.us.Get(ctx, k)
 	if kv.IsErrNotFound(err) {
 		return nil, err
@@ -100,7 +101,6 @@ func (txn *tikvTxn) Get(ctx context.Context, k kv.Key) ([]byte, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-
 	err = txn.store.CheckVisibility(txn.startTS)
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -155,9 +155,9 @@ func (txn *tikvTxn) DelOption(opt kv.Option) {
 // 		2. Create two-phase committer
 // 		3. Prepare the mutations to be committed
 // 		4. Call execute function of two-phase committer
-//			4.1. Prewrite phase
-//			4.2. Commit phase
-//			4.3. Cleanup phase if transaction is failed
+// 			4.1. Prewrite phase
+// 			4.2. Commit phase
+// 			4.3. Cleanup phase if transaction is failed
 func (txn *tikvTxn) Commit(ctx context.Context) error {
 	if !txn.valid {
 		return kv.ErrInvalidTxn

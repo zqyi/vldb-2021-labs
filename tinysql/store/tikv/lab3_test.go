@@ -59,6 +59,7 @@ func (s *testLab3Suite) checkValues(c *C, m map[string]string) {
 func (s *testLab3Suite) mustNotExist(c *C, keys ...[]byte) {
 	txn := s.begin(c)
 	for _, k := range keys {
+		// fmt.Println("get key roud")
 		_, err := txn.Get(context.TODO(), k)
 		c.Assert(err, NotNil)
 		c.Check(terror.ErrorEqual(err, kv.ErrNotExist), IsTrue)
@@ -247,6 +248,7 @@ func (s *testLab3Suite) preparePrewritedTxn(c *C, pk string, kvs map[string]stri
 	c.Assert(err, IsNil)
 	bo := NewBackoffer(context.Background(), PrewriteMaxBackoff)
 	err = committer.prewriteKeys(bo, keys)
+	// fmt.Println("pre test ok")
 	c.Assert(err, IsNil)
 	return txn, committer
 }
@@ -290,6 +292,7 @@ func (s *testLab3Suite) TestCommitSingleBatch(c *C) {
 	})
 }
 
+// 该测试有重大疑问
 func (s *testLab3Suite) TestUnCommit(c *C) {
 	k1 := []byte("k1")
 	k2 := []byte("k2")
@@ -299,7 +302,10 @@ func (s *testLab3Suite) TestUnCommit(c *C) {
 		"k2": "v2",
 	})
 
+	// fmt.Println("test finish")
+
 	s.mustNotExist(c, k1, k2)
+	// fmt.Println("test finish 2")
 }
 
 func (s *testLab3Suite) TestCommit(c *C) {

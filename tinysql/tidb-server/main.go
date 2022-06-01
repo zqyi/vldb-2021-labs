@@ -197,7 +197,7 @@ func overrideConfig() {
 		cfg.Port = uint(p)
 	}
 	if actualFlags[nmCors] {
-		fmt.Println(cors)
+		// fmt.Println(cors)
 		cfg.Cors = *cors
 	}
 	if actualFlags[nmStore] {

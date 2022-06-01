@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	pb "github.com/pingcap-incubator/tinykv/proto/pkg/kvrpcpb"
 	"github.com/pingcap/errors"
@@ -80,6 +81,7 @@ func (s *tikvSnapshot) setSnapshotTS(ts uint64) {
 
 // Get gets the value for key k from snapshot.
 func (s *tikvSnapshot) Get(ctx context.Context, k kv.Key) ([]byte, error) {
+	// fmt.Println("Get")
 	ctx = context.WithValue(ctx, txnStartKey, s.version.Ver)
 	val, err := s.get(NewBackoffer(ctx, getMaxBackoff), k)
 	if err != nil {
@@ -92,6 +94,7 @@ func (s *tikvSnapshot) Get(ctx context.Context, k kv.Key) ([]byte, error) {
 }
 
 func (s *tikvSnapshot) get(bo *Backoffer, k kv.Key) ([]byte, error) {
+	// fmt.Println("get")
 	// Check the cached values first.
 	if s.cached != nil {
 		if value, ok := s.cached[string(k)]; ok {
@@ -143,12 +146,33 @@ func (s *tikvSnapshot) get(bo *Backoffer, k kv.Key) ([]byte, error) {
 		cmdGetResp := resp.Resp.(*pb.GetResponse)
 		val := cmdGetResp.GetValue()
 		if keyErr := cmdGetResp.GetError(); keyErr != nil {
+			// fmt.Println(keyErr)
 			// You need to handle the key error here
 			// If the key error is a lock, there are 2 possible cases:
 			//   1. The transaction is during commit, wait for a while and retry.
 			//   2. The transaction is dead with some locks left, resolve it.
 			// YOUR CODE HERE (lab3).
-			panic("YOUR CODE HERE")
+			if locked := keyErr.GetLocked(); locked != nil {
+				var locks []*Lock
+				lock, err := extractLockFromKeyErr(keyErr)
+				if err != nil {
+					return nil, errors.Trace(err)
+				}
+				locks = append(locks, lock)
+				msBeforeExpired, err := cli.ResolveLocks(bo, s.version.Ver, locks)
+				if err != nil {
+					return nil, errors.Trace(err)
+				}
+				if msBeforeExpired > 0 {
+					err = bo.BackoffWithMaxSleep(BoTxnLock, int(msBeforeExpired), errors.Errorf("snapshot.Get lockedKeys: %d", len(locks)))
+					if err != nil {
+						return nil, errors.Trace(err)
+					}
+				}
+			}
+			if keyErr.GetRetryable() != "" {
+				time.Sleep(time.Duration(200) * time.Millisecond)
+			}
 			continue
 		}
 		return val, nil
