@@ -180,14 +180,17 @@ func (a *ExecStmt) Exec(ctx context.Context) (_ sqlexec.RecordSet, err error) {
 	var e Executor
 	// Hint: step I.4.1
 	// YOUR CODE HERE (lab4)
-	panic("YOUR CODE HERE")
+
+	e, err = a.buildExecutor()
+
 	if err != nil {
 		return nil, err
 	}
 
 	// Hint: step I.4.2
 	// YOUR CODE HERE (lab4)
-	panic("YOUR CODE HERE")
+	err = e.Open(ctx)
+
 	if err != nil {
 		terror.Call(e.Close)
 		return nil, err
@@ -226,9 +229,10 @@ func (a *ExecStmt) handleNoDelay(ctx context.Context, e Executor) (bool, sqlexec
 	if toCheck.Schema().Len() == 0 {
 		// Hint: step I.4.3
 		// YOUR CODE HERE (lab4)
-		panic("YOUR CODE HERE")
-		//return true, r, err
-		return true, nil, nil
+
+		r, err := a.handleNoDelayExecutor(ctx, e)
+
+		return true, r, err
 	}
 
 	return false, nil, nil
@@ -242,7 +246,10 @@ func (a *ExecStmt) handleNoDelayExecutor(ctx context.Context, e Executor) (sqlex
 
 	// Hint: step I.4.3.1
 	// YOUR CODE HERE (lab4)
-	panic("YOUR CODE HERE")
+
+	newChunk := newFirstChunk(e)
+	err = Next(ctx, e, newChunk)
+
 	if err != nil {
 		return nil, err
 	}
