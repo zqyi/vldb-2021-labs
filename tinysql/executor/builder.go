@@ -562,7 +562,7 @@ func (b *executorBuilder) buildProjection(v *plannercore.PhysicalProjection) Exe
 	var childExec Executor
 	// Hint: step III.1
 	// YOUR CODE HERE (lab4)
-	panic("YOUR CODE HERE")
+	b.build(v.Children()[0])
 	if b.err != nil {
 		return nil
 	}
